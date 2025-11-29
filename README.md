@@ -3,8 +3,9 @@
 
 ## Installation
 
+
 ```bash
-sudo ./install.sh
+./install.sh
 ```
 
 ## image

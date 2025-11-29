@@ -35,84 +35,84 @@ splash() {
 THEME_DIR='/boot/grub/themes'
 THEME_NAME='CyberRe'
 splash 'Installing CyberRe Theme...'
-
+echo ""
 
 splash 'The Matrix awaits you...'
+echo ""
 backup_file '/etc/default/grub'
 #==========================================================================================
 #==========================================================================================
 # create themes directory if not exists
 if [[ ! -d "${THEME_DIR}/${THEME_NAME}" ]]; then
     echo -e "${green}copying ${THEME_NAME} theme files...${no_color}"
-    mkdir -p "${THEME_DIR}/${THEME_NAME}"
-    cp -a ./"${THEME_NAME}"/* "${THEME_DIR}/${THEME_NAME}"
+    sudo mkdir -p "${THEME_DIR}/${THEME_NAME}"
+    sudo cp -a ./"${THEME_NAME}"/* "${THEME_DIR}/${THEME_NAME}"
 fi
 #==========================================================================================
 #==========================================================================================
 echo -e "${green}Enabling grub menu${no_color}"
 # remove default grub style if any
 echo -e "${blue}sed -i '/GRUB_TIMEOUT_STYLE=/d' /etc/default/grub${no_color}"
-sed -i '/GRUB_TIMEOUT_STYLE=/d' /etc/default/grub
+sudo sed -i '/GRUB_TIMEOUT_STYLE=/d' /etc/default/grub
 
 # issue #16
 echo -e "${blue}sed -i '/GRUB_TERMINAL_OUTPUT=/d' /etc/default/grub${no_color}"
-sed -i '/GRUB_TERMINAL_OUTPUT=/d' /etc/default/grub
+sudo sed -i '/GRUB_TERMINAL_OUTPUT=/d' /etc/default/grub
 
-echo -e "${blue}echo 'GRUB_TIMEOUT_STYLE=\"menu\"' >> /etc/default/grub${no_color}"
-echo 'GRUB_TIMEOUT_STYLE="menu"' >> /etc/default/grub
+echo -e "${blue}echo 'GRUB_TIMEOUT_STYLE=\"menu\"' | sudo tee -a /etc/default/grub${no_color}"
+echo 'GRUB_TIMEOUT_STYLE="menu"' | sudo tee -a /etc/default/grub > /dev/null
 
 #--------------------------------------------------
 
 echo -e "${green}Setting grub timeout to 60 seconds${no_color}"
 # remove default timeout if any
 echo -e "${blue}sed -i '/GRUB_TIMEOUT=/d' /etc/default/grub${no_color}"
-sed -i '/GRUB_TIMEOUT=/d' /etc/default/grub
+sudo sed -i '/GRUB_TIMEOUT=/d' /etc/default/grub
 
-echo -e "${blue}echo 'GRUB_TIMEOUT=\"60\"' >> /etc/default/grub${no_color}"
-echo 'GRUB_TIMEOUT="60"' >> /etc/default/grub
+echo -e "${blue}echo 'GRUB_TIMEOUT=\"60\"' | sudo tee -a /etc/default/grub${no_color}"
+echo 'GRUB_TIMEOUT="60"' | sudo tee -a /etc/default/grub > /dev/null
 
 #--------------------------------------------------
 
 echo -e "${green}Setting ${THEME_NAME} as default${no_color}"
 # remove theme if any
 echo -e "${blue}sed -i '/GRUB_THEME=/d' /etc/default/grub${no_color}"
-sed -i '/GRUB_THEME=/d' /etc/default/grub
+sudo sed -i '/GRUB_THEME=/d' /etc/default/grub
 
-echo -e "${blue}echo \"GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"\" >> /etc/default/grub${no_color}"
-echo "GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"" >> /etc/default/grub
+echo -e "${blue}echo \"GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"\" | sudo tee -a /etc/default/grub${no_color}"
+echo "GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"" | sudo tee -a /etc/default/grub > /dev/null
 
 #--------------------------------------------------
 
 echo -e "${green}Setting grub graphics mode to auto${no_color}"
 # remove default timeout if any
 echo -e "${blue}sed -i '/GRUB_GFXMODE=/d' /etc/default/grub${no_color}"
-sed -i '/GRUB_GFXMODE=/d' /etc/default/grub
+sudo sed -i '/GRUB_GFXMODE=/d' /etc/default/grub
 
-echo -e "${blue}echo 'GRUB_GFXMODE=\"auto\"' >> /etc/default/grub${no_color}"
-echo 'GRUB_GFXMODE="auto"' >> /etc/default/grub
+echo -e "${blue}echo 'GRUB_GFXMODE=\"auto\"' | sudo tee -a /etc/default/grub${no_color}"
+echo 'GRUB_GFXMODE="auto"' | sudo tee -a /etc/default/grub > /dev/null
 #==========================================================================================
 #==========================================================================================
 #  Update grub config
 echo -e "${green}Updating grub config...${no_color}"
 if [[ -x "$(command -v update-grub)" ]]; then
     echo -e "${blue}update-grub${no_color}"
-    update-grub
+    sudo update-grub
 
 elif [[ -x "$(command -v grub-mkconfig)" ]]; then
     echo -e "${blue}grub-mkconfig -o /boot/grub/grub.cfg${no_color}"
-    grub-mkconfig -o /boot/grub/grub.cfg
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 elif [[ -x "$(command -v grub2-mkconfig)" ]]; then
     if [[ -x "$(command -v zypper)" ]]; then
         echo -e "${blue}grub2-mkconfig -o /boot/grub2/grub.cfg${no_color}"
-        grub2-mkconfig -o /boot/grub2/grub.cfg
+        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
     elif [[ -x "$(command -v dnf)" ]]; then
         echo -e "${blue}grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg${no_color}"
-        grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+        sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
     fi
 fi
 #==========================================================================================
 #==========================================================================================
 echo -e "${green}Boot Theme Update Successful!${no_color}"
-
