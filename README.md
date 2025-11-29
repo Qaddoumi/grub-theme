@@ -3,11 +3,11 @@
 
 ## Installation
 
-Download and install the theme (make sure you have `wget`, `unzip` and `sudo` installed):
+Download and install the theme (make sure you have `curl`, `unzip` and `sudo` installed):
 
 ```bash
 # Download the repository
-wget https://github.com/Qaddoumi/grub-theme/archive/refs/heads/main.zip -O /tmp/grub-theme.zip
+curl -L https://github.com/Qaddoumi/grub-theme/archive/refs/heads/main.zip -o /tmp/grub-theme.zip
 
 # Extract to /tmp
 unzip /tmp/grub-theme.zip -d /tmp
