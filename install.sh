@@ -64,16 +64,6 @@ echo 'GRUB_TIMEOUT_STYLE="menu"' | sudo tee -a /etc/default/grub > /dev/null
 
 #--------------------------------------------------
 
-echo -e "${green}Setting grub timeout to 10 seconds${no_color}"
-# remove default timeout if any
-echo -e "${blue}sed -i '/GRUB_TIMEOUT=/d' /etc/default/grub${no_color}"
-sudo sed -i '/GRUB_TIMEOUT=/d' /etc/default/grub
-
-echo -e "${blue}echo 'GRUB_TIMEOUT=\"10\"' | sudo tee -a /etc/default/grub${no_color}"
-echo 'GRUB_TIMEOUT="10"' | sudo tee -a /etc/default/grub > /dev/null
-
-#--------------------------------------------------
-
 echo -e "${green}Setting ${THEME_NAME} as default${no_color}"
 # remove theme if any
 echo -e "${blue}sed -i '/GRUB_THEME=/d' /etc/default/grub${no_color}"
