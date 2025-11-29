@@ -1,6 +1,10 @@
 
 # CyberRe Grub Theme
 
+## 
+
+![Screenshot](./CyberRe/background.png)
+
 ## Installation
 
 Download and install the theme (make sure you have `curl`, `unzip` and `sudo` installed):
@@ -27,7 +31,3 @@ Alternatively, if you already have the repository cloned:
 ```bash
 ./install.sh
 ```
-
-## 
-
-![Screenshot](./CyberRe/background.png)
