@@ -11,10 +11,31 @@ cyan='\033[0;36m'
 bold="\e[1m"
 no_color='\033[0m' # reset the color to default
 
+if [ "$EUID" -eq 0 ] || [ "$(id -u)" = "0" ]; then
+    if command -v "eval"; then
+        ESCALATION_TOOL="eval"
+    else
+        ESCALATION_TOOL=""
+    fi
+else
+    for tool in sudo doas pkexec; do
+        if command -v "${tool}" >/dev/null 2>&1; then
+            ESCALATION_TOOL="${tool}"
+            echo -e "${cyan}Using ${tool} for privilege escalation${no_color}"
+            break
+        fi
+    done
+
+    if [ -z "${ESCALATION_TOOL}" ]; then
+        echo -e "${red}Error: This script requires root privileges. Please run as root or install sudo, doas, or pkexec.${no_color}"
+        exit 1
+    fi
+fi
+
 backup_file() {
     local file="$1"
-    if sudo test -f "$file"; then
-        sudo cp -an "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"
+    if "${ESCALATION_TOOL}" test -f "$file"; then
+        "${ESCALATION_TOOL}" cp -an "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"
         echo -e "${green}Backed up $file${no_color}"
     else
         echo -e "${yellow}File $file does not exist, skipping backup${no_color}"
@@ -45,62 +66,66 @@ backup_file '/etc/default/grub'
 # create themes directory if not exists
 if [[ ! -d "${THEME_DIR}/${THEME_NAME}" ]]; then
     echo -e "${green}copying ${THEME_NAME} theme files...${no_color}"
-    sudo mkdir -p "${THEME_DIR}/${THEME_NAME}"
-    sudo cp -a ./"${THEME_NAME}"/* "${THEME_DIR}/${THEME_NAME}"
+    "${ESCALATION_TOOL}" mkdir -p "${THEME_DIR}/${THEME_NAME}"
+    "${ESCALATION_TOOL}" cp -a ./"${THEME_NAME}"/* "${THEME_DIR}/${THEME_NAME}"
 fi
 #==========================================================================================
 #==========================================================================================
 echo -e "${green}Enabling grub menu${no_color}"
 # remove default grub style if any
 echo -e "${blue}sed -i '/GRUB_TIMEOUT_STYLE=/d' /etc/default/grub${no_color}"
-sudo sed -i '/GRUB_TIMEOUT_STYLE=/d' /etc/default/grub
+"${ESCALATION_TOOL}" sed -i '/GRUB_TIMEOUT_STYLE=/d' /etc/default/grub
 
 # issue #16
 echo -e "${blue}sed -i '/GRUB_TERMINAL_OUTPUT=/d' /etc/default/grub${no_color}"
-sudo sed -i '/GRUB_TERMINAL_OUTPUT=/d' /etc/default/grub
+"${ESCALATION_TOOL}" sed -i '/GRUB_TERMINAL_OUTPUT=/d' /etc/default/grub
 
-echo -e "${blue}echo 'GRUB_TIMEOUT_STYLE=\"menu\"' | sudo tee -a /etc/default/grub${no_color}"
-echo 'GRUB_TIMEOUT_STYLE="menu"' | sudo tee -a /etc/default/grub > /dev/null
+echo -e "${blue}echo 'GRUB_TIMEOUT_STYLE=\"menu\"' | ${ESCALATION_TOOL:-} tee -a /etc/default/grub${no_color}"
+echo 'GRUB_TIMEOUT_STYLE="menu"' | "${ESCALATION_TOOL}" tee -a /etc/default/grub > /dev/null
 
 #--------------------------------------------------
 
 echo -e "${green}Setting ${THEME_NAME} as default${no_color}"
 # remove theme if any
 echo -e "${blue}sed -i '/GRUB_THEME=/d' /etc/default/grub${no_color}"
-sudo sed -i '/GRUB_THEME=/d' /etc/default/grub
+"${ESCALATION_TOOL}" sed -i '/GRUB_THEME=/d' /etc/default/grub
 
-echo -e "${blue}echo \"GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"\" | sudo tee -a /etc/default/grub${no_color}"
-echo "GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"" | sudo tee -a /etc/default/grub > /dev/null
+echo -e "${blue}echo \"GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"\" | ${ESCALATION_TOOL:-} tee -a /etc/default/grub${no_color}"
+echo "GRUB_THEME=\"${THEME_DIR}/${THEME_NAME}/theme.txt\"" | "${ESCALATION_TOOL}" tee -a /etc/default/grub > /dev/null
 
 #--------------------------------------------------
 
 echo -e "${green}Setting grub graphics mode to auto${no_color}"
 # remove default timeout if any
 echo -e "${blue}sed -i '/GRUB_GFXMODE=/d' /etc/default/grub${no_color}"
-sudo sed -i '/GRUB_GFXMODE=/d' /etc/default/grub
+"${ESCALATION_TOOL}" sed -i '/GRUB_GFXMODE=/d' /etc/default/grub
 
-echo -e "${blue}echo 'GRUB_GFXMODE=\"auto\"' | sudo tee -a /etc/default/grub${no_color}"
-echo 'GRUB_GFXMODE="auto"' | sudo tee -a /etc/default/grub > /dev/null
+echo -e "${blue}echo 'GRUB_GFXMODE=\"auto\"' | ${ESCALATION_TOOL:-} tee -a /etc/default/grub${no_color}"
+echo 'GRUB_GFXMODE="auto"' | "${ESCALATION_TOOL}" tee -a /etc/default/grub > /dev/null
 #==========================================================================================
 #==========================================================================================
 #  Update grub config
 echo -e "${green}Updating grub config...${no_color}"
 if [[ -x "$(command -v update-grub)" ]]; then
     echo -e "${blue}update-grub${no_color}"
-    sudo update-grub
+    "${ESCALATION_TOOL}" update-grub
 
 elif [[ -x "$(command -v grub-mkconfig)" ]]; then
     echo -e "${blue}grub-mkconfig -o /boot/grub/grub.cfg${no_color}"
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
+    "${ESCALATION_TOOL}" grub-mkconfig -o /boot/grub/grub.cfg
 
 elif [[ -x "$(command -v grub2-mkconfig)" ]]; then
     if [[ -x "$(command -v zypper)" ]]; then
         echo -e "${blue}grub2-mkconfig -o /boot/grub2/grub.cfg${no_color}"
-        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+        "${ESCALATION_TOOL}" grub2-mkconfig -o /boot/grub2/grub.cfg
 
     elif [[ -x "$(command -v dnf)" ]]; then
         echo -e "${blue}grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg${no_color}"
-        sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+        "${ESCALATION_TOOL}" grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+    else
+        # Generic fallback for grub2-mkconfig
+        echo -e "${blue}grub2-mkconfig -o /boot/grub/grub.cfg${no_color}"
+        "${ESCALATION_TOOL}" grub2-mkconfig -o /boot/grub/grub.cfg
     fi
 fi
 #==========================================================================================

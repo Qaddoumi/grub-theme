@@ -7,7 +7,7 @@
 
 ## Installation
 
-Download and install the theme (make sure you have `git` and `sudo` installed):
+Download and install the theme (make sure you have `git` and `sudo|doas|pkexec` installed):
 
 ```bash
 # Clone the repository
