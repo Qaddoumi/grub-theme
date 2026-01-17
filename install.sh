@@ -12,44 +12,44 @@ bold="\e[1m"
 no_color='\033[0m' # reset the color to default
 
 if [ "$EUID" -eq 0 ] || [ "$(id -u)" = "0" ]; then
-    if command -v "eval"; then
-        ESCALATION_TOOL="eval"
-    else
-        ESCALATION_TOOL=""
-    fi
+	if command -v "eval"; then
+		ESCALATION_TOOL="eval"
+	else
+		ESCALATION_TOOL=""
+	fi
 else
-    for tool in sudo doas pkexec; do
-        if command -v "${tool}" >/dev/null 2>&1; then
-            ESCALATION_TOOL="${tool}"
-            echo -e "${cyan}Using ${tool} for privilege escalation${no_color}"
-            break
-        fi
-    done
+	for tool in sudo doas pkexec; do
+		if command -v "${tool}" >/dev/null 2>&1; then
+			ESCALATION_TOOL="${tool}"
+			echo -e "${cyan}Using ${tool} for privilege escalation${no_color}"
+			break
+		fi
+	done
 
-    if [ -z "${ESCALATION_TOOL}" ]; then
-        echo -e "${red}Error: This script requires root privileges. Please run as root or install sudo, doas, or pkexec.${no_color}"
-        exit 1
-    fi
+	if [ -z "${ESCALATION_TOOL}" ]; then
+		echo -e "${red}Error: This script requires root privileges. Please run as root or install sudo, doas, or pkexec.${no_color}"
+		exit 1
+	fi
 fi
 
 backup_file() {
-    local file="$1"
-    if "${ESCALATION_TOOL}" test -f "$file"; then
-        "${ESCALATION_TOOL}" cp -an "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"
-        echo -e "${green}Backed up $file${no_color}"
-    else
-        echo -e "${yellow}File $file does not exist, skipping backup${no_color}"
-    fi
+	local file="$1"
+	if "${ESCALATION_TOOL}" test -f "$file"; then
+		"${ESCALATION_TOOL}" cp -an "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"
+		echo -e "${green}Backed up $file${no_color}"
+	else
+		echo -e "${yellow}File $file does not exist, skipping backup${no_color}"
+	fi
 }
 splash() {
-    echo_title() {     echo -ne "\033[1;44;37m${*}\033[0m\n"; }
-    local hr
-    # create hr with length of $1
-    hr=" **$(printf "%${#1}s" | tr ' ' '*')** "
-    echo_title "${hr}"
-    echo_title " * $1 * "
-    echo_title "${hr}"
-    echo
+	echo_title() {	 echo -ne "\033[1;44;37m${*}\033[0m\n"; }
+	local hr
+	# create hr with length of $1
+	hr=" **$(printf "%${#1}s" | tr ' ' '*')** "
+	echo_title "${hr}"
+	echo_title " * $1 * "
+	echo_title "${hr}"
+	echo
 }
 
 #THEME_DIR='/usr/share/grub/themes'
@@ -65,9 +65,9 @@ backup_file '/etc/default/grub'
 #==========================================================================================
 # create themes directory if not exists
 if [[ ! -d "${THEME_DIR}/${THEME_NAME}" ]]; then
-    echo -e "${green}copying ${THEME_NAME} theme files...${no_color}"
-    "${ESCALATION_TOOL}" mkdir -p "${THEME_DIR}/${THEME_NAME}"
-    "${ESCALATION_TOOL}" cp -a ./"${THEME_NAME}"/* "${THEME_DIR}/${THEME_NAME}"
+	echo -e "${green}copying ${THEME_NAME} theme files...${no_color}"
+	"${ESCALATION_TOOL}" mkdir -p "${THEME_DIR}/${THEME_NAME}"
+	"${ESCALATION_TOOL}" cp -a ./"${THEME_NAME}"/* "${THEME_DIR}/${THEME_NAME}"
 fi
 #==========================================================================================
 #==========================================================================================
@@ -107,26 +107,26 @@ echo 'GRUB_GFXMODE="auto"' | "${ESCALATION_TOOL}" tee -a /etc/default/grub > /de
 #  Update grub config
 echo -e "${green}Updating grub config...${no_color}"
 if [[ -x "$(command -v update-grub)" ]]; then
-    echo -e "${blue}update-grub${no_color}"
-    "${ESCALATION_TOOL}" update-grub
+	echo -e "${blue}update-grub${no_color}"
+	"${ESCALATION_TOOL}" update-grub
 
 elif [[ -x "$(command -v grub-mkconfig)" ]]; then
-    echo -e "${blue}grub-mkconfig -o /boot/grub/grub.cfg${no_color}"
-    "${ESCALATION_TOOL}" grub-mkconfig -o /boot/grub/grub.cfg
+	echo -e "${blue}grub-mkconfig -o /boot/grub/grub.cfg${no_color}"
+	"${ESCALATION_TOOL}" grub-mkconfig -o /boot/grub/grub.cfg
 
 elif [[ -x "$(command -v grub2-mkconfig)" ]]; then
-    if [[ -x "$(command -v zypper)" ]]; then
-        echo -e "${blue}grub2-mkconfig -o /boot/grub2/grub.cfg${no_color}"
-        "${ESCALATION_TOOL}" grub2-mkconfig -o /boot/grub2/grub.cfg
+	if [[ -x "$(command -v zypper)" ]]; then
+		echo -e "${blue}grub2-mkconfig -o /boot/grub2/grub.cfg${no_color}"
+		"${ESCALATION_TOOL}" grub2-mkconfig -o /boot/grub2/grub.cfg
 
-    elif [[ -x "$(command -v dnf)" ]]; then
-        echo -e "${blue}grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg${no_color}"
-        "${ESCALATION_TOOL}" grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
-    else
-        # Generic fallback for grub2-mkconfig
-        echo -e "${blue}grub2-mkconfig -o /boot/grub/grub.cfg${no_color}"
-        "${ESCALATION_TOOL}" grub2-mkconfig -o /boot/grub/grub.cfg
-    fi
+	elif [[ -x "$(command -v dnf)" ]]; then
+		echo -e "${blue}grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg${no_color}"
+		"${ESCALATION_TOOL}" grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+	else
+		# Generic fallback for grub2-mkconfig
+		echo -e "${blue}grub2-mkconfig -o /boot/grub/grub.cfg${no_color}"
+		"${ESCALATION_TOOL}" grub2-mkconfig -o /boot/grub/grub.cfg
+	fi
 fi
 #==========================================================================================
 #==========================================================================================
